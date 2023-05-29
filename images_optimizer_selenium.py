@@ -6,83 +6,99 @@ import time
 import os
 import zipfile
 
+
 def unzip_most_recent_file(download_dir, dest_path):
-    # Obtener todos los archivos en el directorio de descargas
+    # Get all files in download directory
     files = os.listdir(download_dir)
 
-    # Filtrar solo los archivos zip
+    # Filter only zip files
     zip_files = [file for file in files if file.endswith(".zip")]
 
     if not zip_files:
-        raise Exception("No zip files found in download directory")
+        raise Exception("🕵️‍♀️ No zip files found in download directory.")
 
-    # Obtener la ruta completa de los archivos zip
+    # Get full path of zip files
     zip_file_paths = [os.path.join(download_dir, file) for file in zip_files]
 
-    # Obtener el archivo zip más reciente
+    # Get the most recent zip file
     newest_zip_file = max(zip_file_paths, key=os.path.getmtime)
 
-    # Descomprimir el archivo zip más reciente
+    # Unzip the most recent zip file
     with zipfile.ZipFile(newest_zip_file, 'r') as zip_ref:
         zip_ref.extractall(dest_path)
+    print(f"📦 Unzipped the file {newest_zip_file}!")
+
 
 def delete_files(file_paths):
-    # Elimina cada archivo en la lista de file_paths
+    # Delete each file in the file_paths list
     for file_path in file_paths:
         if os.path.isfile(file_path):
             os.remove(file_path)
+    print("🗑️  Removed original files!")
 
-# Recuperamos los nombres de todos los archivos .jpg, .png, y .jpeg en el directorio actual
+
+# Get all .jpg, .png, .jpeg, and .avif file names in the current directory
 current_dir = os.getcwd()
 file_names = os.listdir(current_dir)
-file_extensions = ['.jpg', '.png', '.jpeg']
-file_paths = [os.path.join(current_dir, file) for file in file_names if os.path.splitext(file)[1] in file_extensions]
+file_extensions = ['.jpg', '.png', '.jpeg', '.avif']
+file_paths = [os.path.join(current_dir, file)
+              for file in file_names if os.path.splitext(file)[1] in file_extensions]
 
-# Aquí se especifica la ruta del driver de Chrome
+if not file_paths:
+    print("🕵️‍♀️ No images found in current directory.")
+    exit()
+
+print(f"🗂️ Found {len(file_paths)} images")
+
+# Set Chrome driver
 webdriver_service = Service(ChromeDriverManager().install())
 driver = webdriver.Chrome(service=webdriver_service)
 
-# Aquí se abre la URL
-driver.get("https://compressimage.io/") 
+# Open the URL
+driver.get("https://compressimage.io/")
 
-# Se necesita tiempo para que la página cargue completamente. 
-time.sleep(1) 
+# Give the page time to load
+time.sleep(1)
 
-# Hacemos clic en el botón de configuración
+# Click the settings button
 settings_button = driver.find_element(By.ID, "settings_btn")
 settings_button.click()
-time.sleep(0.5) 
+time.sleep(0.5)
 
-# Hacemos clic en el botón de configuración de imagen
+# Click the image settings button
 image_settings_button = driver.find_element(By.CLASS_NAME, "switch")
 try:
     image_settings_button.click()
 except Exception as e:
-    print(f"Error clicking image_settings_button: {e}")
+    print(f"⚠️ Error clicking image_settings_button: {e}")
 
-# Aquí se encuentra el elemento input por su atributo class y se envían las rutas de los archivos
+# Find the input element by class attribute and send file paths
 upload_input = driver.find_element(By.CLASS_NAME, "form_file_upload_field")
 upload_input.send_keys('\n'.join(file_paths))
 
-# Esperamos a que se carguen los archivos
-time.sleep(len(file_paths) * 1.1) 
+# Wait for files to be uploaded
+print("🚀 Uploading your images... please wait!")
+time.sleep(len(file_paths) * 1.1)
 
-# Finalmente, hacemos clic en el div de descarga
+# Click the download div
 download_zip = driver.find_element(By.CLASS_NAME, "file_download")
 try:
     download_zip.click()
+    print("💾 Downloading the optimized images...")
 except Exception as e:
-    print(f"Error clicking download_zip: {e}")
+    print(f"⚠️ Error clicking download_zip: {e}")
 
-# Esperamos a que se descargue el archivo
+# Wait for the download to complete
 time.sleep(2)
 
-# Descomprimimos el archivo .zip más reciente
+# Unzip the most recent zip file
 download_dir = "/home/vauxoo/Descargas"
 unzip_most_recent_file(download_dir, current_dir)
 
-# Eliminamos los archivos de imagen originales
+# Delete the original image files
 delete_files(file_paths)
 
-# Es buena práctica cerrar el driver al final
+# Close the driver at the end
 driver.quit()
+
+print(f"✨ Done!, {len(file_paths)} images optimized! ✨")
