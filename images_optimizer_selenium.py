@@ -92,7 +92,7 @@ except Exception as e:
 time.sleep(2)
 
 # Unzip the most recent zip file
-download_dir = "/home/vauxoo/Descargas"
+download_dir = "/home/vauxoo/Descargas" # Change this to your download directory
 unzip_most_recent_file(download_dir, current_dir)
 
 # Delete the original image files
