@@ -18,6 +18,7 @@ pip install -r requirements.txt
 ## ⚙️ Uso
 
 Asegúrate de tener todas las imágenes que quieres comprimir en el directorio de trabajo actual.
+Asegurate de cambiar la variable de download_dir al path de tu directorio de Descargas.
 
 Ejecuta el script de Python.
 
